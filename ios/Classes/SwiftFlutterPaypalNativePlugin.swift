@@ -4,17 +4,17 @@ import PayPalCheckout
 
 public class SwiftFlutterPaypalNativePlugin: NSObject, FlutterPlugin {
     private static let METHOD_CHANNEL_NAME = "flutter_paypal_native"
-
+    
     static var channel: FlutterMethodChannel?
     static var paypalCallBackHelper: PayPalCallBackHelper?
-
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         channel = FlutterMethodChannel(name: METHOD_CHANNEL_NAME, binaryMessenger: registrar.messenger())
         paypalCallBackHelper = PayPalCallBackHelper(flutterChannel: channel!)
         let instance = SwiftFlutterPaypalNativePlugin()
         registrar.addMethodCallDelegate(instance, channel: channel!)
     }
-
+    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "FlutterPaypal#initiate":
@@ -29,89 +29,90 @@ public class SwiftFlutterPaypalNativePlugin: NSObject, FlutterPlugin {
             result(FlutterMethodNotImplemented)
         }
     }
-
+    
     func initiatePackage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) -> Void {
         guard let args = call.arguments as? [String: Any] else {
             result(FlutterError(code: "INVALID_ARGUMENTS", message: "Invalid arguments", details: nil))
             return
         }
-//        let returnURL = args["returnUrl"] as! String // Outdated
+        //        let returnURL = args["returnUrl"] as! String // Outdated
         let clientID = args["clientId"] as! String
         let payPalEnvironmentStr = args["payPalEnvironment"] as! String
         let currencyStr = args["currency"] as! String
         let userActionStr = args["userAction"] as! String
-
+        
         let payPalEnvironment = Environment.init(rawValueString: payPalEnvironmentStr)
         let currency = CurrencyCode.withLabel(rawValue: currencyStr)
         let userAction = UserAction.init(rawValueString: userActionStr)
-
+        
         Checkout.set(config: CheckoutConfig(
-                clientID: clientID,
-                onApprove: { approval in
-                    try! SwiftFlutterPaypalNativePlugin
-                            .paypalCallBackHelper?
-                            .onApprove(approval)
-                },
-                onShippingChange: { shippingChange, shippingAction in
-                    try! SwiftFlutterPaypalNativePlugin
-                            .paypalCallBackHelper?
-                            .onShippingChange(shippingChange)
-                },
-                onCancel: SwiftFlutterPaypalNativePlugin
-                        .paypalCallBackHelper?
-                        .onCancel,
-                onError: SwiftFlutterPaypalNativePlugin
-                        .paypalCallBackHelper?
-                        .onError,
-                environment: payPalEnvironment
+            clientID: clientID,
+            onApprove: { approval in
+                try! SwiftFlutterPaypalNativePlugin
+                    .paypalCallBackHelper?
+                    .onApprove(approval)
+            },
+            onShippingChange: { shippingChange, shippingAction in
+                try! SwiftFlutterPaypalNativePlugin
+                    .paypalCallBackHelper?
+                    .onShippingChange(shippingChange)
+            },
+            onCancel: SwiftFlutterPaypalNativePlugin
+                .paypalCallBackHelper?
+                .onCancel,
+            onError: SwiftFlutterPaypalNativePlugin
+                .paypalCallBackHelper?
+                .onError,
+            environment: payPalEnvironment
         ))
     }
-
+    
     func makeOrder(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) -> Void {
         guard let args = call.arguments as? [String: Any] else {
             result(FlutterError(
-                    code: "INVALID_ARGUMENTS",
-                    message: "Invalid arguments",
-                    details: nil
+                code: "INVALID_ARGUMENTS",
+                message: "Invalid arguments",
+                details: nil
             ))
             return
         }
         let purchaseUnitsStr = args["purchaseUnits"] as! String
-//        let userActionStr = args["userAction"] as! String
+        //        let userActionStr = args["userAction"] as! String
         let orderId = args["orderId"] as! String
-
+        
         let listCustomUnit = try! JSONDecoder().decode([CustomUnit].self, from: purchaseUnitsStr.data(using: .utf8)!)
         var purchaseUnits: [PurchaseUnit] = []
         for customUnit in listCustomUnit {
             let amount = PayPalCheckout.PurchaseUnit.Amount(
-                    currencyCode: CurrencyCode.withLabel(rawValue: customUnit.currency),
-                    value: customUnit.price
+                currencyCode: CurrencyCode.withLabel(rawValue: customUnit.currency),
+                value: customUnit.price
             )
-
+            
             let purchaseUnit = PayPalCheckout.PurchaseUnit(
-                    amount: amount,
-                    referenceId: customUnit.referenceId
+                amount: amount,
+                referenceId: customUnit.referenceId
             )
-
+            
             purchaseUnits.append(purchaseUnit)
         }
         if (!orderId.isEmpty) {
             Checkout.setCreateOrderCallback { createOrderAction in
                 // Retrieve order ID or EC-token from server-side integration
                 createOrderAction.set(orderId: orderId)
-            Checkout.start()
-        } else {
-            Checkout.start(
-                createOrder: { createOrderAction in
-                    let order = OrderRequest(
-                        intent: .capture,
-                        purchaseUnits: purchaseUnits
-                        
-                    )
-                    createOrderAction.create(order: order)
-                }
-            )
+                Checkout.start()
+            } else {
+                Checkout.start(
+                    createOrder: { createOrderAction in
+                        let order = OrderRequest(
+                            intent: .capture,
+                            purchaseUnits: purchaseUnits
+                            
+                        )
+                        createOrderAction.create(order: order)
+                    }
+                )
+            }
+            
         }
-
     }
 }
