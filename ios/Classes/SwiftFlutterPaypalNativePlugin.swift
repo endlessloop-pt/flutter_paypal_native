@@ -95,10 +95,11 @@ public class SwiftFlutterPaypalNativePlugin: NSObject, FlutterPlugin {
             
             purchaseUnits.append(purchaseUnit)
         }
-        if (!orderId.isEmpty) {
+        if !orderId.isEmpty {
             Checkout.setCreateOrderCallback { createOrderAction in
                 // Retrieve order ID or EC-token from server-side integration
                 createOrderAction.set(orderId: orderId)
+            }
                 Checkout.start()
             } else {
                 Checkout.start(
@@ -115,4 +116,3 @@ public class SwiftFlutterPaypalNativePlugin: NSObject, FlutterPlugin {
             
         }
     }
-}
