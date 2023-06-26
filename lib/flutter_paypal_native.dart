@@ -18,6 +18,7 @@ class FlutterPaypalNative {
   bool _initiated = false;
   final _methodChannel = const MethodChannel('flutter_paypal_native');
   List<FPayPalPurchaseUnit> purchaseUnits = [];
+  String _orderId = '';
   //default callback does nothing
   FPayPalOrderCallback _callback = FPayPalOrderCallback(
     onCancel: () {},
@@ -45,6 +46,7 @@ class FlutterPaypalNative {
   ///app_id is you application id e.g
   ///com.example.myapp
   Future<FlutterPaypalNative> init({
+    required String orderID,
     //the return url. This is probably your appid://paypalpay
     required String returnUrl,
     //your client id from paypal developer
@@ -58,7 +60,7 @@ class FlutterPaypalNative {
   }) async {
     _methodChannel.setMethodCallHandler(_handleMethod);
     _initiated = true;
-
+    _orderId = orderID;
     Map<String, String> data = {
       "returnUrl": returnUrl,
       "clientId": clientID,
@@ -71,6 +73,7 @@ class FlutterPaypalNative {
       "userAction": FPayPalUserActionHelper.convertFromEnumToString(
         action,
       ),
+      "orderId": orderID,
     };
     await _methodChannel.invokeMethod<String>(
       'FlutterPaypal#initiate',
@@ -119,6 +122,7 @@ class FlutterPaypalNative {
       "userAction": FPayPalUserActionHelper.convertFromEnumToString(
         action,
       ),
+      "orderId": _orderId,
     };
 
     await _methodChannel.invokeMethod<String>('FlutterPaypal#makeOrder', data);

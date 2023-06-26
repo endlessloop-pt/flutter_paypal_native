@@ -78,6 +78,7 @@ public class SwiftFlutterPaypalNativePlugin: NSObject, FlutterPlugin {
         }
         let purchaseUnitsStr = args["purchaseUnits"] as! String
 //        let userActionStr = args["userAction"] as! String
+        let orderId = args["orderId"] as! String
 
         let listCustomUnit = try! JSONDecoder().decode([CustomUnit].self, from: purchaseUnitsStr.data(using: .utf8)!)
         var purchaseUnits: [PurchaseUnit] = []
@@ -94,16 +95,23 @@ public class SwiftFlutterPaypalNativePlugin: NSObject, FlutterPlugin {
 
             purchaseUnits.append(purchaseUnit)
         }
-        Checkout.start(
+        if (!orderId.isEmpty) {
+            Checkout.setCreateOrderCallback { createOrderAction in
+                // Retrieve order ID or EC-token from server-side integration
+                createOrderAction.set(orderId: orderId)
+            Checkout.start()
+        } else {
+            Checkout.start(
                 createOrder: { createOrderAction in
                     let order = OrderRequest(
-                            intent: .capture,
-                            purchaseUnits: purchaseUnits
-                            
+                        intent: .capture,
+                        purchaseUnits: purchaseUnits
+                        
                     )
                     createOrderAction.create(order: order)
                 }
-        )
+            )
+        }
 
     }
 }

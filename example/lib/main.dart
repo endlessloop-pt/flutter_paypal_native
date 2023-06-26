@@ -38,6 +38,7 @@ class _MyAppState extends State<MyApp> {
 
     //initiate payPal plugin
     await _FlutterPaypalNativePlugin.init(
+      orderID: '',
       //your app id !!! No Underscore!!! see readme.md for help
       returnUrl: "com.piccmaq.flutter.paypal.native.example://paypalpay",
       //client id from developer dashboard
