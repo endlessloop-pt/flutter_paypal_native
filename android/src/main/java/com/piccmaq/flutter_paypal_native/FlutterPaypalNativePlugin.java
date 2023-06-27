@@ -151,6 +151,7 @@ public class FlutterPaypalNativePlugin extends FlutterRegistrarResponder
 
         String purchaseUnitsStr = call.argument("purchaseUnits");
         String userActionStr = call.argument("userAction");
+        String orderId = call.argument("orderId");
         UserAction userAction = (new UserActionHelper()).getEnumFromString(userActionStr);
 
         List<PurchaseUnitC> purchaseUnitsC = (new PurchaseUnitHelper())
@@ -158,30 +159,33 @@ public class FlutterPaypalNativePlugin extends FlutterRegistrarResponder
         CurrencyCodeHelper helper = (new CurrencyCodeHelper());
 
         try {
-            PayPalCheckout.startCheckout(
+            PayPalCheckout. startCheckout(
                     createOrderActions -> {
-                        ArrayList<PurchaseUnit> purchaseUnits = new ArrayList<>();
-                        for (PurchaseUnitC purchaseUnit : purchaseUnitsC) {
-                            CurrencyCode currency = helper.getEnumFromString(
-                                    purchaseUnit.getCurrency());
-                            purchaseUnits.add(
-                                    new PurchaseUnit.Builder()
-                                            .amount(
-                                                    new Amount.Builder()
-                                                            .currencyCode(currency)
-                                                            .value(purchaseUnit.getPrice())
-                                                            .build())
-                                            .referenceId(purchaseUnit.getReferenceID())
-                                            .build());
+//                        ArrayList<PurchaseUnit> purchaseUnits = new ArrayList<>();
+//                        for (PurchaseUnitC purchaseUnit : purchaseUnitsC) {
+//                            CurrencyCode currency = helper.getEnumFromString(
+//                                    purchaseUnit.getCurrency());
+//                            purchaseUnits.add(
+//                                    new PurchaseUnit.Builder()
+//                                            .amount(
+//                                                    new Amount.Builder()
+//                                                            .currencyCode(currency)
+//                                                            .value(purchaseUnit.getPrice())
+//                                                            .build())
+//                                            .referenceId(purchaseUnit.getReferenceID())
+//                                            .build());
+//                        }
+//                        OrderRequest order = new OrderRequest(
+//                                OrderIntent.CAPTURE,
+//                                new AppContext.Builder()
+//                                        .userAction(userAction)
+//                                        .build(),
+//                                purchaseUnits);
+                        if (orderId != null) {
+                            createOrderActions.set(orderId);
                         }
-                        OrderRequest order = new OrderRequest(
-                                OrderIntent.CAPTURE,
-                                new AppContext.Builder()
-                                        .userAction(userAction)
-                                        .build(),
-                                purchaseUnits);
-                        createOrderActions.create(order, orderId -> {
-                        });
+//                        createOrderActions.create(order, orderId -> {
+//                        });
                     });
             result.success("completed");
         } catch (Exception e) {
