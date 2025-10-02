@@ -11,7 +11,13 @@ Now supports Android and iOS 🌟⚡. :)
 | ----------- | ------- | --- |
 | **Support** | SDK 21+ | all |
 
+[Checkout IOS Doc](https://developer.paypal.com/limited-release/paypal-mobile-checkout/initialize-sdk/)
 
+[Checkout Android Doc](https://developer.paypal.com/limited-release/paypal-mobile-checkout/initialize-sdk/)
+
+[Github Android SDK](https://github.com/paypal/android-checkout-sdk)
+
+[Github IOS](https://github.com/paypal/paypalcheckout-ios)
 
 <img src="https://github.com/harrowmykel/flutter_paypal_native/raw/main/resources/media/flutter_paypal.gif?raw=true" alt="Screenshot" height="400" />
 
@@ -74,6 +80,7 @@ Note: If your application ID contains underscores [ _ ] then you need to modify 
 
 A return URL redirects users back to the originating page during a checkout flow. For most integrations, using your application ID and `://paypalpay` is the simplest and best `returnUrl` to use as part of the CheckoutConfig. However, there are circumstances when you may need more control over the returnUrl, such as when your application ID has underscores.
 
+
 ##### Choose your custom return URL
 Your custom return URL:
 
@@ -85,41 +92,25 @@ To allow for seamless app switches, make your custom return URL unique. We recom
 
 If you're creating a custom return URL because your application ID contains underscores, replace the underscores with periods. For example, change `com.paypal.example_payment_application` to `com.paypal.example.payment.application` .
 
-Enable your app to respond to your custom redirect URL by registering new activities using the `<activity>` tag in the android manifest file.
-
-```xml
-<activity
-    android:name="com.paypal.openid.RedirectUriReceiverActivity"
-    android:excludeFromRecents="true"
-    android:theme="@style/PYPLAppTheme">
-    <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data
-            android:host="paypalpay"
-            android:scheme="YOUR-CUSTOM-SCHEME" />
-    </intent-filter>
-</activity>
-<activity
-    android:name="com.paypal.pyplcheckout.home.view.activities.PYPLInitiateCheckoutActivity"
-    android:theme="@style/AppFullScreenTheme">
-    <intent-filter android:autoVerify="true">
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data
-            android:host="paypalxo"
-            android:scheme="YOUR-CUSTOM-SCHEME" />
-    </intent-filter>
-</activity>
-```
-
 Modify the code
 - Copy the sample PayPal Mobile Checkout SDK code and paste it into the code for your mobile checkout page.
 For both activities, replace `YOUR-CUSTOM-SCHEME` with the custom return URL that you chose in Step 1. In the example above, instead of `com.paypal.example_payment_application`, you'd use `com.paypal.example.paypal.application`.
 
 - Your app can now respond to authentication and web checkout deep links.
+
+#### Migrating from V1?
+If you are migrating from Plugin V0.x.x. or V1.x.x 
+- You do not need to add custom activity to your flutter app anymore.
+remove the following from your `AndroidManifest.xml`
+
+```xml
+  <activity
+            android:name="com.paypal.openid.RedirectUriReceiverActivity"
+       .... />
+  <activity
+            android:name="com.paypal.pyplcheckout.home.view.activities.PYPLInitiateCheckoutActivity"
+           ... />
+```
 
 
 ### How to use the library
@@ -222,8 +213,8 @@ class _MyAppState extends State<MyApp> {
               ElevatedButton(
                 child: const Text("Do payment"),
                 onPressed: () {
-                  //add 4 items to cart
-                  for (var i = 0; i < 4; i++) {
+                  //add item to cart. Max is between 4 to 8
+                  if (_flutterPaypalNativePlugin.canAddMorePurchaseUnit) {
                     _flutterPaypalPlugin.addPurchaseUnit(
                       FPayPalPurchaseUnit(
                         // random prices
@@ -233,12 +224,11 @@ class _MyAppState extends State<MyApp> {
                         referenceId: FPayPalStrHelper.getRandomString(16),
                       ),
                     );
+                    // initPayPal();
+                    _flutterPaypalPlugin.makeOrder(
+                      action: FPayPalUserAction.payNow,
+                    );
                   }
-
-                  // initPayPal();
-                  _flutterPaypalPlugin.makeOrder(
-                    action: FPayPalUserAction.payNow,
-                  );
                 },
               ),
             ],
@@ -259,10 +249,45 @@ class _MyAppState extends State<MyApp> {
 ```
 
 
+### Notice
+
+- Max Number of items you can add to purchase units is between 4-6.
+Or else Paypal will throw an Exception!
+
+```dart
+
+  if (_flutterPaypalNativePlugin.canAddMorePurchaseUnit) {
+    _flutterPaypalPlugin.addPurchaseUnit(
+      FPayPalPurchaseUnit(
+        // random prices
+        amount: Random().nextDouble() * 100,
+
+        ///please use your own algorithm for referenceId. Maybe ProductID?
+        referenceId: FPayPalStrHelper.getRandomString(16),
+      ),
+    );
+  }
+```
+
 
 
 #### Troubleshooting Tips
 if you have trouble using this library, read these:
+- If you get
+```
+build\app\intermediates\packaged_manifests\debug\AndroidManifest.xml:97: error: resource style/AppFullScreenTheme (aka com.piccmaq.flutter_paypal_native_example:style/AppFullScreenTheme) not found.
+     error: failed processing manifest.
+```
+Remove the following from your `AndroidManifest.xml`. This is no longer required in V1
+```xml
+  <activity
+            android:name="com.paypal.openid.RedirectUriReceiverActivity"
+       .... />
+  <activity
+            android:name="com.paypal.pyplcheckout.home.view.activities.PYPLInitiateCheckoutActivity"
+           ... />
+```
+
 
 - Make sure your applicationId is registered in the developer dashboard as `applicationID://paypalpay` e.g `com.piccmaq.flutter.paypal.flutter.paypal.example://paypalpay` . after registering it, you may have to wait 3 hours for paypal to review it. You may also have to register your privacy url too.
 
