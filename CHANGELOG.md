@@ -1,26 +1,3 @@
-## 2.1.0
-* updated android package to 1.2.0
-* note: android package naming convention may have changed
-
-## 2.0.2
-* added null check for buyer and Buyer.getEmail()
-
-## 2.0.1
-* changed ios sdk version from 0.109.0 to 1.1.0
-* updated minium ios version to 13.0 (required by paypal)
-
-## 2.0.0
-* changed android sdk version from 0.122.2 to 1.1.0
-* updated example
-* updated readme
-
-## 1.0.2
-* added null check for Buyer.getName()
-* updated readme to indicate max purchase unit count
-* added `canAddMorePurchaseUnit` as helper function
-* changed android sdk version from 0.122.0 to 0.122.2
-* updated example
-
 ## 1.0.1
 * fixed ios error in shipping change
 

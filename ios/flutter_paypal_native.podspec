@@ -4,10 +4,10 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_paypal_native'
-  s.version          = '2.0.0'
+  s.version          = '0.0.7'
   s.summary          = 'Flutter SDK Lib for Paypal.'
   s.description      = <<-DESC
-  A native implementation for Paypal with flutter..
+Flutter SDK Lib for Paypal.
                        DESC
   s.homepage         = 'https://github.com/harrowmykel/flutter_paypal_native'
   s.license          = { :file => '../LICENSE' }
@@ -16,8 +16,7 @@ Pod::Spec.new do |s|
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   s.dependency 'PayPalCheckout'
-  # s.platform = :ios
-  s.platform = :ios, '13.0'
+  s.platform = :ios, '9.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }

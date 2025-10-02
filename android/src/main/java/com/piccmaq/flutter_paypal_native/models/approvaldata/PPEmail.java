@@ -21,9 +21,6 @@ public class PPEmail {
 
     public static PPEmail fromPaypalObject(Buyer buyer){
         PPEmail n=new PPEmail();
-        if(buyer==null){
-            return n;
-        }
         if (buyer.getEmail() == null) {
             return n;
         }
